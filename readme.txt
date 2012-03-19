@@ -4,7 +4,7 @@ Target: http://www.onlineflashgames.net/games/2713/bejeweled.html
 
 Info:
 * game board is 296x296 pixels
-* blocks are 37x37 pixels
+* blocks are 36x36 pixels with 1px border around it
 
 Tools:
 * AutoIt: http://www.autoitscript.com/site/autoit/
