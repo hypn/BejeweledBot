@@ -2,6 +2,10 @@ Bejeweled Bot, by @Hypn and @RC1140
 
 Target: http://www.onlineflashgames.net/games/2713/bejeweled.html
 
+Info:
+* game board is 296x296 pixels
+* blocks are 37x37 pixels
+
 Tools:
 * AutoIt: http://www.autoitscript.com/site/autoit/
 
