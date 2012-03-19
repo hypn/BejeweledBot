@@ -13,7 +13,8 @@ Info:
 	0xF7F7F7 = white
 	0x31A429 = green
 	0xFD9F44 = orange 
-
+* offset X = 19px
+* offset Y = 26px
 
 Tools:
 * AutoIt: http://www.autoitscript.com/site/autoit/
