@@ -6,13 +6,13 @@ Info:
 * game board is 296x296 pixels
 * blocks are 36x36 pixels with 1px border around it
 * colours (decimal in brackets):
-	0xDE49CDF = purple (233086175)
-	0x2F5CF3 = red (3103987)
-	0x52EFFF = yellow (5435391)
-	0xFFF58E = blue (16774542)
+	0xE49CDF = purple (14654692)
+	0x2F5CF3 = red (15948847)
+	0x52EFFF = yellow (16772946)
+	0xFFF58E = blue (9369087)
 	0xF7F7F7 = white (16250871)
-	0x29A431 = green (371525745)
-	0x449FFD = orange (4497405)
+	0x29A431 = green (3253289)
+	0x449FFD = orange (16621380)
 * offset X = 19px
 * offset Y = 26px
 
