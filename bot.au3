@@ -13,10 +13,18 @@ Func buildColorMap()
    Return $ucm
 EndFunc
 
+Func clickCurrentCell($x,$y)
+   MouseClick ( "left" ,$coord[0]  + 18 +( $x* 37), $coord[1] + ( ($y +1) * 37) - 11 )
+EndFunc
+Func clickCellAbove($x,$y)
+   MouseClick ( "left" ,$coord[0]  + 18 +( ($x)  * 37), $coord[1] + ( ($y) * 37) - 11 )
+EndFunc
+Func clickCellLeft($x,$y)
+   MouseClick ( "left" ,$coord[0]  + 18 +( ($x -1) * 37), $coord[1] + ( ($y +1) * 37) - 11 )
+EndFunc
 ;This checks for a match downwards to the right of the current block
-Func checkMatchDownRight($coloredMap,$x,$y)
-   if $y < 7 Then
-	  if $x < 6 Then
+Func checkMatchDownRightEnd($coloredMap,$x,$y)
+   if $y < 7 And $x < 6 Then
 		 if $coloredMap[$y][$x] == $coloredMap[$y+1][$x+2]  Then
 			if $coloredMap[$y+1][$x+1]  == $coloredMap[$y][$x] Then
 			   ConsoleWrite(@LF )	    
@@ -24,17 +32,57 @@ Func checkMatchDownRight($coloredMap,$x,$y)
 			   MouseClick ( "left" ,$coord[0]  + 18 +( $x* 37), $coord[1] + ( ($y +1) * 37) - 11 )
 			   MouseClick ( "left" ,$coord[0]  + 18 +( $x * 37), $coord[1] + ( ($y +2) * 37) - 11 )
 			   Return True
-   ;~ 		 Else
-   ;~ 			ConsoleWrite($coloredMap[$y+1][$x+1]& " , ")
-   ;~ 			ConsoleWrite($coloredMap[$y+1][$x+2]& " , ")
 			EndIf
-		 EndIf	 
 	  EndIf
    EndIf
    Return False
 EndFunc
 
-Func checkMatchRightRight($coloredMap,$x,$y)
+Func checkMatchUpLeftEnd($coloredMap,$x,$y)
+   if $y > 2 And $x > 0 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y-2][$x -1] And $coloredMap[$y][$x] == $coloredMap[$y-1][$x-1] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 up left")
+			clickCurrentCell($x,$y)
+			clickCellLeft($x,$y)
+			Return True
+	  EndIf
+   EndIf
+   Return False
+EndFunc
+
+Func checkMatchLeftEnd($coloredMap,$x,$y)
+   if $x > 2 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y][$x -2] And $coloredMap[$y][$x] == $coloredMap[$y][$x-3] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 up left")
+			clickCurrentCell($x,$y)
+			clickCellLeft($x,$y)
+			Return True
+	  EndIf
+   EndIf
+   Return False
+EndFunc
+
+;Check a number of blocks aiming to the left on the left of the current block but
+;above as well
+Func checkMatchLeftLeftUpEnd($coloredMap,$x,$y)
+   if $x >= 2 And $y > 0 Then
+;~ 	  ConsoleWrite($coloredMap[$y][$x] & $coloredMap[$y-1][$x -2] & $coloredMap[$y-1][$x -3])
+;~ 	  ConsoleWrite(@LF)
+	  if $coloredMap[$y][$x] == $coloredMap[$y-1][$x -1] And $coloredMap[$y][$x] == $coloredMap[$y-1][$x-2] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 up left")
+			clickCurrentCell($x,$y)
+			;Click one to the left
+			clickCellAbove($x,$y)
+			Return True
+	  EndIf
+   EndIf
+   Return False
+EndFunc
+
+Func checkMatchRightEnd($coloredMap,$x,$y)
    if $x < 4 Then
 	  if $coloredMap[$y][$x] == $coloredMap[$y][$x+3]  Then
 		 if $coloredMap[$y][$x] == $coloredMap[$y][$x+2] Then
@@ -82,8 +130,36 @@ Func checkMatchBottomMiddle($coloredMap,$x,$y)
    Return False
 EndFunc
 
+Func checkMatchTopMiddle($coloredMap,$x,$y)
+   if $x < 6 And $x > 0 And $y > 0 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y-1][$x+1] And $coloredMap[$y][$x] == $coloredMap[$y-1][$x-1] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 right middle")
+			;Click the current cell
+			clickCurrentCell($x,$y)
+			clickCellAbove($x,$y)		
+			Return True
+	  EndIf	 
+   EndIf
+   Return False
+EndFunc
 
-Func checkMatchUpUp($coloredMap,$x,$y)
+Func checkMatchUpEnd($coloredMap,$x,$y)
+   if $y > 2 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y-3][$x] And $coloredMap[$y][$x] == $coloredMap[$y-2][$x] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 right middle")
+			;Click the current cell
+			MouseClick ( "left" ,$coord[0]  + 18 +( $x* 37), $coord[1] + ( ($y +1) * 37) - 11 )
+			;Click 1 to the right
+			MouseClick ( "left" ,$coord[0]  + 18 +( ($x)  * 37), $coord[1] + ( ($y) * 37) - 11 )
+			Return True
+	  EndIf	 
+   EndIf
+   Return False
+EndFunc
+
+Func checkMatchDownEnd($coloredMap,$x,$y)
    if $y > 2 Then
 	  if $coloredMap[$y][$x] == $coloredMap[$y-3][$x] And $coloredMap[$y][$x] == $coloredMap[$y-2][$x] Then
 			ConsoleWrite(@LF )	    
@@ -140,24 +216,42 @@ Func solveSingleMatch($crd)
    for $y = 0 To 7
 	  For $x = 0 To 7 Step 1
 		 ;Stop the loops if any of the functions return true
-		 if checkMatchDownRight($coloredMap,$x,$y) Then
+		 if checkMatchDownRightEnd($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
-		 if checkMatchRightRight($coloredMap,$x,$y) Then
+		 if checkMatchRightEnd($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
 		 if checkMatchRightMiddle($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
-		 if checkMatchUpUp($coloredMap,$x,$y) Then
+		 if checkMatchUpEnd($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
 		 if checkMatchBottomMiddle($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
+		 if checkMatchDownEnd($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchUpLeftEnd($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchTopMiddle($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchLeftEnd($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchLeftLeftUpEnd($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 
+		 
+		 
 		 
 		 if $y < 7 Then
-			ConsoleWrite($coloredMap[$y][$x] & " , ")
+;~ 			ConsoleWrite($coloredMap[$y][$x] & " , ")
 			;Search for and item 1 down and 2 to the right
 			if $x < 6 Then
 			   if $y < 5 Then
@@ -174,14 +268,14 @@ Func solveSingleMatch($crd)
 				  Else
 					 ;We need to check 3 down when moving blocks down	
 					 ;ConsoleWrite($coloredMap[$y+1][$x]& " , ")
-					 ConsoleWrite($coloredMap[$y+2][$x]& " , ")
-					 ConsoleWrite($coloredMap[$y+3][$x]& " , ")
+;~ 					 ConsoleWrite($coloredMap[$y+2][$x]& " , ")
+;~ 					 ConsoleWrite($coloredMap[$y+3][$x]& " , ")
 				  EndIf	   
 			   EndIf
 			EndIf
 			;Search for and item 1 down and 2 to the left
 			if $x > 2 Then
-			   ConsoleWrite($coloredMap[$y+1][$x-2]& " , ")
+;~ 			   ConsoleWrite($coloredMap[$y+1][$x-2]& " , ")
 			EndIf
 			
 			if $y < 6 Then
@@ -199,8 +293,8 @@ Func solveSingleMatch($crd)
 						;$crd[$y][$x] = PixelGetColor ( $coord[0]  + 18 +( $x* 37), $coord[1] + ( ($y +1) * 37) - 11 )
 						ConsoleWrite(@LF )	    
 					 Else
-						ConsoleWrite($coloredMap[$y+1][$x+1]& " , ")
-						ConsoleWrite($coloredMap[$y+2][$x+1]& " , ")
+;~ 						ConsoleWrite($coloredMap[$y+1][$x+1]& " , ")
+;~ 						ConsoleWrite($coloredMap[$y+2][$x+1]& " , ")
 					 endif
 				  EndIf
 			   EndIf
@@ -218,8 +312,8 @@ Func solveSingleMatch($crd)
 						;$crd[$y][$x] = PixelGetColor ( $coord[0]  + 18 +( $x* 37), $coord[1] + ( ($y +1) * 37) - 11 )
 						ConsoleWrite(@LF )	    
 					 Else
-						ConsoleWrite($coloredMap[$y+1][$x-1]& " , ")
-						ConsoleWrite($coloredMap[$y+2][$x-1]& " , ")
+;~ 						ConsoleWrite($coloredMap[$y+1][$x-1]& " , ")
+;~ 						ConsoleWrite($coloredMap[$y+2][$x-1]& " , ")
 					 EndIf
 				  EndIf
 				  
@@ -227,11 +321,11 @@ Func solveSingleMatch($crd)
 			Else
 			   ;Search for and item 2 up and 1 to the right
 			   if $x < 6 Then
-				  ConsoleWrite($coloredMap[$y-2][$x+1])
+;~ 				  ConsoleWrite($coloredMap[$y-2][$x+1])
 			   EndIf
 			EndIf
 		 Else	 
-			ConsoleWrite($coloredMap[$y][$x] & " , ")				  
+;~ 			ConsoleWrite($coloredMap[$y][$x] & " , ")				  
 			if $x < 5 Then
 			   if $coloredMap[$y][$x] == $coloredMap[$y-1][$x+2] Then
 				  if $coloredMap[$y-1][$x+1]  == $coloredMap[$y][$x] Then
@@ -242,30 +336,30 @@ Func solveSingleMatch($crd)
 					 ExitLoop(2)
 					 ConsoleWrite(@LF )	    
 				  Else
-					 ConsoleWrite($coloredMap[$y-1][$x+1]& " , ")
-					 ConsoleWrite($coloredMap[$y-1][$x+2]& " , ")
+;~ 					 ConsoleWrite($coloredMap[$y-1][$x+1]& " , ")
+;~ 					 ConsoleWrite($coloredMap[$y-1][$x+2]& " , ")
 				  EndIf
 			   EndIf
 			   
 			EndIf
 			if $x < 6 Then
-			   ConsoleWrite($coloredMap[$y-2][$x+1])
+;~ 			   ConsoleWrite($coloredMap[$y-2][$x+1])
 			EndIf
 		 EndIf
-		 ConsoleWrite(@LF )	    
+;~ 		 ConsoleWrite(@LF )	    
    ;~ 	  ExitLoop
 	  Next
-	  ConsoleWrite(@LF )	    
+;~ 	  ConsoleWrite(@LF )	    
 
    Next   
 EndFunc
 
 Local $count = 0
 While $count <= 10
-   $count += 1
+;~    $count += 1
    $uncoloredMap = buildColorMap()
    solveSingleMatch($uncoloredMap)
-   ConsoleWrite("Sleeping")
+;~    ConsoleWrite("Sleeping")
 ;~    Sleep(5000)
 WEnd
 ;~ ConsoleWrite($coloredMap[0][0])
