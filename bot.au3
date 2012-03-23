@@ -22,6 +22,11 @@ EndFunc
 Func clickCellLeft($x,$y)
    MouseClick ( "left" ,$coord[0]  + 18 +( ($x -1) * 37), $coord[1] + ( ($y +1) * 37) - 11 )
 EndFunc
+
+Func clickCellBelow($x,$y)
+   MouseClick ( "left" ,$coord[0]  + 18 +( ($x)  * 37), $coord[1] + ( ($y +2) * 37) - 11 )
+EndFunc
+
 ;This checks for a match downwards to the right of the current block
 Func checkMatchDownRightEnd($coloredMap,$x,$y)
    if $y < 7 And $x < 6 Then
@@ -58,6 +63,19 @@ Func checkMatchLeftEnd($coloredMap,$x,$y)
 			ConsoleWrite(" Row Match 3 up left")
 			clickCurrentCell($x,$y)
 			clickCellLeft($x,$y)
+			Return True
+	  EndIf
+   EndIf
+   Return False
+EndFunc
+
+Func checkMatchLeftDownEnd($coloredMap,$x,$y)
+   if $x > 2  And $y < 6 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y+1][$x -1] And $coloredMap[$y][$x] == $coloredMap[$y+1][$x-2] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 up left")
+			clickCurrentCell($x,$y)
+			clickCellBelow($x,$y)
 			Return True
 	  EndIf
    EndIf
@@ -115,8 +133,22 @@ Func checkMatchRightMiddle($coloredMap,$x,$y)
    Return False
 EndFunc
 
+Func checkMatchLeftMiddle($coloredMap,$x,$y)
+   if $y > 0 And $x > 0 And $y < 6 Then
+	  if $coloredMap[$y][$x] == $coloredMap[$y-1][$x-1] And $coloredMap[$y][$x] == $coloredMap[$y+1][$x-1] Then
+			ConsoleWrite(@LF )	    
+			ConsoleWrite(" Row Match 3 right middle")
+			;Click the current cell
+			clickCurrentCell($x,$y)
+			clickCellLeft($x,$y)
+			Return True
+	  EndIf	 
+   EndIf
+   Return False
+EndFunc
+
 Func checkMatchBottomMiddle($coloredMap,$x,$y)
-   if $x < 6 And $x > 0 And $y <= 6 Then
+   if $x > 0 And $y > 0 And $x < 6 And $y <= 6 Then
 	  if $coloredMap[$y][$x] == $coloredMap[$y+1][$x+1] And $coloredMap[$y][$x] == $coloredMap[$y+1][$x-1] Then
 			ConsoleWrite(@LF )	    
 			ConsoleWrite(" Row Match 3 right middle")
@@ -216,13 +248,13 @@ Func solveSingleMatch($crd)
    for $y = 0 To 7
 	  For $x = 0 To 7 Step 1
 		 ;Stop the loops if any of the functions return true
+		 if checkMatchRightMiddle($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
 		 if checkMatchDownRightEnd($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
 		 if checkMatchRightEnd($coloredMap,$x,$y) Then
-			ExitLoop(2)
-		 EndIf
-		 if checkMatchRightMiddle($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
 		 if checkMatchUpEnd($coloredMap,$x,$y) Then
@@ -244,6 +276,12 @@ Func solveSingleMatch($crd)
 			ExitLoop(2)
 		 EndIf
 		 if checkMatchLeftLeftUpEnd($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchLeftMiddle($coloredMap,$x,$y) Then
+			ExitLoop(2)
+		 EndIf
+		 if checkMatchLeftDownEnd($coloredMap,$x,$y) Then
 			ExitLoop(2)
 		 EndIf
 		 
@@ -354,9 +392,20 @@ Func solveSingleMatch($crd)
    Next   
 EndFunc
 
+Func checkForEndGame()
+   Local $endGameCoords = PixelSearch(0, 0, 1440, 900, 0x3FF00FF)
+   if IsInt($endGameCoords) then
+	  Return False
+   EndIf
+   ;MouseMove($endGameCoords[0], $endGameCoords[1])
+   ;ConsoleWrite("End game text possibly found exiting")
+   Exit   
+EndFunc
+
 Local $count = 0
 While $count <= 10
 ;~    $count += 1
+   checkForEndGame()
    $uncoloredMap = buildColorMap()
    solveSingleMatch($uncoloredMap)
 ;~    ConsoleWrite("Sleeping")
